@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
+    implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+application {
+    mainClass = 'App'
+}
+
+tasks.register('runClient', JavaExec) {
+    group = 'application'
+    description = 'Runs the application in client mode'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'App'
+    args 'client'
+}
+
+tasks.register('runServer', JavaExec) {
+    group = 'application'
+    description = 'Runs the application in server mode'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'App'
+    args 'server'
+}
