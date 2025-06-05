@@ -11,6 +11,6 @@ socketchat is a multi client, console based chat application for users on the sa
 
 ## 👨‍💻 developer
 
-- name:  *Ege Cagan Kantar*
-- major: *comp eng*
+- name:  ege cagan kantar
+- major: comp eng
 
