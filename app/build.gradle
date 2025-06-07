@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 repositories {
@@ -9,7 +10,6 @@ repositories {
 
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
-    implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
 }
 
 java {
@@ -19,7 +19,15 @@ java {
 }
 
 application {
-    mainClass = 'App'
+    mainClass = 'App' 
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': application.mainClass.get() 
+        )
+    }
 }
 
 tasks.register('runClient', JavaExec) {
