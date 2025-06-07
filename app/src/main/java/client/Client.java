@@ -1,16 +1,12 @@
 package client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.InputMismatchException;
@@ -25,21 +21,28 @@ public class Client {
     
     private int statusCode;
     private final List<String> localIps;
-    private final Scanner sc;
+    
+    private final Scanner  sc;
     private final ReadJson statusReader;
 
     private static Scanner globalScanner = null;
-    private static Client singleInstance = null;
+    private static Client  singleInstance = null;
+
+    private static MessageReciever receiver = null;
+    private static MessageSender   sender   = null;
 
     private static String username = null;
 
-    public static final String RESET = "\u001B[0m";
-    public static final String GREEN = "\u001B[32m";
-    public static final String RED = "\u001B[31m";
-    public static final String YELLOW = "\u001B[33m";
+    public static final String RESET   = "\u001B[0m";
+    public static final String GREEN   = "\u001B[32m";
+    public static final String RED     = "\u001B[31m";
+    public static final String YELLOW  = "\u001B[33m";
 
+    private final String GREET_KW = "haleluyah"; // ilerde bunu customizable yapicam
 
-    private final static String SERVER_RESPONSE = "haleluyah";
+    public int getStatusCode() {
+        return statusCode;
+    }
 
     private void setStatusCode(int code) {
         this.statusCode = code;
@@ -51,14 +54,14 @@ public class Client {
         }
     }
 
-    public int getStatusCode() {
-        return statusCode;
-    }
-
     private Client(Scanner sc, ReadJson statusReader) {
         this.sc = sc;
+
         this.statusReader = statusReader;
-        this.localIps = new ArrayList<>();
+        this.localIps     = new ArrayList<>();
+
+        sender   = MessageSender.getInstance();
+        receiver = MessageReciever.getInstance();
     }
 
     public static synchronized Client getClient(ReadJson statusReader) {
@@ -73,10 +76,10 @@ public class Client {
             singleInstance = new Client(scanner, statusReader);
         }
         return singleInstance;
-    }
+    }  
 
     private void getIpAddresses() {
-        localIps.clear();
+        localIps.clear(); // onceden kalanlari temizlemek icin ekledik cunku ilk server aramasi basarisiz ise ikinci aramada temizlik lazim
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
@@ -120,29 +123,57 @@ public class Client {
         return port;
     }
 
-    private String findServer(int port) {
-        for (String ip : localIps) {
-            try (Socket socket = new Socket()) {
-                socket.connect(new InetSocketAddress(ip, port), 1000); 
-                socket.setSoTimeout(1000); 
-                BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream())
-                );
-                String response = reader.readLine();
-                if (SERVER_RESPONSE.equals(response)) {
-                    System.out.println(GREEN + "valid server found at: " + ip + RESET);
-                    return ip;
-                } else {
-                    System.err.println(YELLOW + "unexpected server response from: " + ip + " -> " + response + RESET);
-                    setStatusCode(13); 
+    private Socket connectToValidServer(int port) {
+        while (true) {
+            getIpAddresses();
+
+            if (localIps.isEmpty()) {
+                System.err.println(RED + "no local IPs found." + RESET);
+                setStatusCode(10);
+                return null;
+            }
+
+            for (String ip : localIps) {
+                try {
+                    Socket socket = new Socket();
+                    socket.connect(new InetSocketAddress(ip, port), 1000);
+                    socket.setSoTimeout(1000);
+
+                    receiver.initializeMsgRcv(socket);
+                    String welcome = receiver.receiveWelcomeMessage();
+
+                    if (welcome != null && welcome.startsWith(GREET_KW)) {
+                        System.out.println(GREEN + "valid server found at: " + ip + RESET);
+                        sender.initializeMsgSndr(socket);
+                        return socket;
+                    } else {
+                        System.err.println(YELLOW + "invalid greeting from " + ip + ": " + welcome + RESET);
+                        socket.close();
+                    }
+
+                } catch (IOException e) {
+                    System.err.println(RED + "connection to " + ip + " failed: " + e.getMessage() + RESET);
+                    setStatusCode(11);
                 }
-            } catch (IOException e) {
-                setStatusCode(11);
+            }
+
+            System.out.print("no valid server found retry with updated IP list? (y/n): ");
+            String retry = sc.nextLine().trim().toLowerCase();
+
+            while (!retry.equals("y") && !retry.equals("n")) {
+                System.out.print("please enter 'y' or 'n': ");
+                retry = sc.nextLine().trim().toLowerCase();
+            }
+
+            if (retry.equals("n")) {
+                break;
             }
         }
-        setStatusCode(12); 
+
+        setStatusCode(12);
         return null;
     }
+
 
     private void closeSocket(Socket socket) {
         try {
@@ -151,52 +182,6 @@ public class Client {
             }
         } catch (IOException e) {
             System.err.println(RED + "failed to close socket: " + e.getMessage() + RESET);
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private Socket connect(String ip, int port) {
-        try {
-            Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(ip, port), 1000);
-            socket.setSoTimeout(1000);
-            return socket;
-        } catch (IOException e) {
-            setStatusCode(11); 
-            return null;
-        }
-    }
-
-
-    private int recieveMessage(Socket server) {
-        try {
-            BufferedReader reader = new BufferedReader(
-                new InputStreamReader(server.getInputStream())
-            );
-            String response = reader.readLine();
-            if (response != null) {
-
-                // response starts with the "username: "
-                System.out.println("\n" + response);
-            }
-            return 0;
-        } catch (SocketTimeoutException e) {
-            return 8;
-        } catch (IOException e) {
-            return 11;
         }
     }
     
@@ -208,50 +193,55 @@ public class Client {
         while (username.isEmpty()) {
             System.err.println("username cannot be empty. please enter again.");
             System.out.print("what is your user name: ");
-            username = sc.nextLine().trim().replaceAll("\\s+", "");
+            username = sc.nextLine().trim().replaceAll("\\s+", "-");
         }
 
         System.out.println();
         System.out.printf("hello %s\n", username);
 
-        getIpAddresses();
-        if (localIps.isEmpty()) 
-            return statusCode;
         int port = askPort();
-        if (port == -1) 
-            return statusCode;
-        String serverIp = findServer(port);
-        if (serverIp == null) 
-            return statusCode;
-        Socket socket = connect(serverIp, port);
-        if (socket == null) 
+        if (port == -1)
             return statusCode;
 
-
-        Thread receiver = new Thread(() -> {
-            while (!socket.isClosed()) {
-                recieveMessage(socket);
-            }
-        });
-        receiver.start();
+        Socket socket = connectToValidServer(port);
+        if (socket == null)
+            return statusCode;
 
         try {
-            sc.nextLine();
+            sender.send("username:" + username);
+
+            Thread receiverThread = new Thread(() -> {
+                while (!socket.isClosed()) {
+                    String msg = receiver.receiveSingleMessage();
+                    if (msg != null) {
+                        System.out.println("\n" + msg);
+                        System.out.print(">>> ");
+                    }
+                }
+            });
+            receiverThread.start();
+
             while (true) {
                 System.out.print(">>> ");
-                String message = sc.nextLine();
-                if (message.toLowerCase().trim().startsWith("/exit")) {
+                String input = sc.nextLine();
+
+                if (input.toLowerCase().trim().startsWith("/exit")) {
+                    sender.send(username, "!!disconnected");
                     break;
                 }
-                PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-                writer.println(message);
+
+                sender.send(username, input);
             }
-        } catch (IOException e) {
+
+        } catch (Exception e) {
             setStatusCode(11);
         } finally {
             closeSocket(socket);
-            System.out.println(GREEN + "disconnected from chat bye." + RESET);
+            System.out.println(GREEN + "disconnected from chat, bye." + RESET);
         }
+
         return statusCode;
     }
+
+
 }
