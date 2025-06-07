@@ -1,42 +1,62 @@
 {
-  "0": {
-    "name": "SUCCESS",
-    "message": "Operation completed successfully."
-  },
-  "1": {
-    "name": "UNKNOWN_ERROR",
-    "message": "An unknown error has occurred."
-  },
-  "2": {
-    "name": "INVALID_ARGUMENT",
-    "message": "The input argument is invalid."
-  },
-  "3": {
-    "name": "CONNECTION_FAILED",
-    "message": "Failed to establish connection."
-  },
-  "4": {
-    "name": "SERVER_NOT_RESPONDING",
-    "message": "Server is not responding to requests."
-  },
-  "5": {
-    "name": "PORT_IN_USE",
-    "message": "The specified port is already in use."
-  },
-  "6": {
-    "name": "DB_ERROR",
-    "message": "An error occurred while accessing the database."
-  },
-  "7": {
-    "name": "JSON_PARSE_ERROR",
-    "message": "Failed to parse JSON message."
-  },
-  "8": {
-    "name": "SOCKET_TIMEOUT",
-    "message": "The socket operation timed out."
-  },
-  "9": {
-    "name": "UNAUTHORIZED_ACCESS",
-    "message": "Unauthorized operation attempted."
-  }
+  	"0": {
+    	"name": "SUCCESS",
+    	"message": "Operation completed successfully."
+  	},
+  	"1": {
+    	"name": "UNKNOWN_ERROR",
+    	"message": "An unknown error has occurred."
+  	},
+  	"2": { 
+    	"name": "INVALID_ARGUMENT",
+    	"message": "The input argument is invalid."
+  	},
+  	"3": {
+    	"name": "CONNECTION_FAILED",
+    	"message": "Failed to establish connection."
+  	},
+  	"4": {
+		"name": "SERVER_NOT_RESPONDING",
+    	"message": "Server is not responding to requests."
+  	},
+  	"5": {
+    	"name": "PORT_IN_USE",
+    	"message": "The specified port is already in use."
+  	},
+  	"6": {
+    	"name": "DB_ERROR",
+    	"message": "An error occurred while accessing the database."
+  	},	
+  	"7": {
+    	"name": "JSON_PARSE_ERROR",
+    	"message": "Failed to parse JSON message."
+  	},
+  	"8": {
+    	"name": "SOCKET_TIMEOUT",
+    	"message": "The socket operation timed out."
+  	},
+  	"9": {
+    	"name": "UNAUTHORIZED_ACCESS",
+    	"message": "Unauthorized operation attempted."
+  	},
+  	"10": {
+    	"name": "NETWORK_INTERFACE_NOT_FOUND",
+    	"message": "failed to retrieve network interfaces."
+  	},
+  	"11": {
+  		"name": "SOCKET_CONNECT_ERROR",
+  		"message": "An error occurred while trying to connect the socket."
+	},
+	"12": {
+  		"name": "NO_SERVER_FOUND",
+  		"message": "No valid server was found on the network."
+	},
+	"13": {
+  		"name": "INVALID_SERVER_RESPONSE",
+  		"message": "The server responded with an unexpected message."
+	},
+	"14": {
+  		"name": "SCANNER_INPUT_INTERRUPTED",
+  		"message": "Input was interrupted or invalid while reading from the console."
+	}
 }
