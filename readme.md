@@ -2,7 +2,6 @@
 
 **socketchat** is a multi-client console-based chat app designed for users on the same local network it is written in java and uses tcp sockets to establish secure real time communication between users via a central server in the same lan
 
----
 
 ## ⚙️ how to run
 
@@ -24,8 +23,6 @@ cd app/build/libs
 java -jar app-all.jar client
 ```
 
----
-
 ## client features
 
 - command line based interface
@@ -42,7 +39,6 @@ java -jar app-all.jar client
 
 for more information run it and send a /help message
 
----
 
 ## server features
 
@@ -58,7 +54,6 @@ for more information run it and send a /help message
 
 for more information run it and send a /help message
 
----
 
 ## technologies i have used
 
@@ -69,14 +64,12 @@ for more information run it and send a /help message
 - jackson (json parsing)
 - shadowJar plugin (to package dependencies)
 
----
 
 ## 👨‍💼 developer
 
 * **name:**  ege cagan kantar
 * **major:** computer engineering
 
----
 
 ## 📁 planned features
 
