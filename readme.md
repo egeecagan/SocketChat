@@ -43,10 +43,11 @@ for more information run it and send a /help message
 ## server features
 
 - admin console for live commands
-- supports graceful shutdown with shutdown hook
+- supports graceful shutdown with shutdown hook or /exit
 - greeting keyword customization with /greeting
 - client list with /users
 - server info with /whoami
+- on the server client number with /clientnum
 - thread per client architecture (client handler is a runnable)
 - secure socket communication
 - real time message broadcasting
